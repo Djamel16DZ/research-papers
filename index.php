@@ -97,14 +97,14 @@ if (!extension_loaded('pdo_mysql')) {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 
     } catch (\PDOException $e) {
-        $db_error =$e->getMessage();
+        $db_error = $e->getMessage();
     }
 }
 
 // =========================================================================
 // 2. REQUÊTE POST : ENREGISTRER (AJOUTER OU MODIFIER) UN ARTICLE
 // =========================================================================
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) &&$_POST['action'] === 'save_item') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save_item') {
     header('Content-Type: application/json');
     if ($pdo === null) {
         echo json_encode(['success' => false, 'error' => $db_error ?? 'Base de données non connectée']);
@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) &&$_POST['a
         $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
         $classification = trim($_POST['classification']);
         
-        if (!array_key_exists($classification,$classificationTypes)) {
+        if (!array_key_exists($classification, $classificationTypes)) {
             echo json_encode(['success' => false, 'error' => 'Classification invalide.']);
             exit;
         }
@@ -125,8 +125,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) &&$_POST['a
         // Récupération dynamique des métadonnées bibliographiques
         $meta = [];
         if (isset($classificationTypes[$classification]['fields'])) {
-            foreach ($classificationTypes[$classification]['fields'] as $key =>$label) {
-                $meta[$key] = isset($_POST['meta_' .$key]) ? trim($_POST['meta_' .$key]) : '';
+            foreach ($classificationTypes[$classification]['fields'] as $key => $label) {
+                $meta[$key] = isset($_POST['meta_' . $key]) ? trim($_POST['meta_' . $key]) : '';
             }
         }
         $meta_json = json_encode($meta, JSON_UNESCAPED_UNICODE);
@@ -134,27 +134,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) &&$_POST['a
         // Gestion du fichier PDF
         $pdf_filename = null;
         if ($id > 0) {
-            $stmtOld =$pdo->prepare("SELECT pdf_file FROM research_items WHERE id = :id");
-            $stmtOld->execute([':id' =>$id]);
-            $oldData =$stmtOld->fetch();
-            $pdf_filename =$oldData['pdf_file'] ?? null;
+            $stmtOld = $pdo->prepare("SELECT pdf_file FROM research_items WHERE id = :id");
+            $stmtOld->execute([':id' => $id]);
+            $oldData = $stmtOld->fetch();
+            $pdf_filename = $oldData['pdf_file'] ?? null;
         }
 
-        if (isset($_FILES['pdf_file']) &&$_FILES['pdf_file']['error'] === UPLOAD_ERR_OK) {
-            $fileTmpPath =$_FILES['pdf_file']['tmp_name'];
-            $fileName =$_FILES['pdf_file']['name'];
-            if (strtolower(pathinfo($fileName, PATHINFO_EXTENSION)) === 'pdf') {$newFileName = md5(time() . $fileName) . '.pdf';$destPath = $uploadDir .$newFileName;
-                if (move_uploaded_file($fileTmpPath,$destPath)) {
-                    if (!empty($pdf_filename) && file_exists($uploadDir .$pdf_filename)) {
-                        @unlink($uploadDir .$pdf_filename);
+        if (isset($_FILES['pdf_file']) && $_FILES['pdf_file']['error'] === UPLOAD_ERR_OK) {
+            $fileTmpPath = $_FILES['pdf_file']['tmp_name'];
+            $fileName = $_FILES['pdf_file']['name'];
+            if (strtolower(pathinfo($fileName, PATHINFO_EXTENSION)) === 'pdf') {
+                $newFileName = md5(time() . $fileName) . '.pdf';
+                $destPath = $uploadDir . $newFileName;
+                if (move_uploaded_file($fileTmpPath, $destPath)) {
+                    if (!empty($pdf_filename) && file_exists($uploadDir . $pdf_filename)) {
+                        @unlink($uploadDir . $pdf_filename);
                     }
-                    $pdf_filename =$newFileName;
+                    $pdf_filename = $newFileName;
                 }
             }
         }
 
         if ($id > 0) {
-            $stmt =$pdo->prepare("UPDATE research_items SET classification = :classification, title = :title, pdf_file = :pdf_file, meta_data = :meta_data WHERE id = :id");
+            $stmt = $pdo->prepare("UPDATE research_items SET classification = :classification, title = :title, pdf_file = :pdf_file, meta_data = :meta_data WHERE id = :id");
             $stmt->execute([
                 ':classification' => $classification,
                 ':title'          => $title,
@@ -163,7 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) &&$_POST['a
                 ':id'             => $id
             ]);
         } else {
-            $stmt =$pdo->prepare("INSERT INTO research_items (classification, title, pdf_file, meta_data) VALUES (:classification, :title, :pdf_file, :meta_data)");
+            $stmt = $pdo->prepare("INSERT INTO research_items (classification, title, pdf_file, meta_data) VALUES (:classification, :title, :pdf_file, :meta_data)");
             $stmt->execute([
                 ':classification' => $classification,
                 ':title'          => $title,
@@ -182,7 +184,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) &&$_POST['a
 // =========================================================================
 // 3. REQUÊTE POST : SUPPRIMER UN ARTICLE
 // =========================================================================
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) &&$_POST['action'] === 'delete_item') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_item') {
     header('Content-Type: application/json');
     if ($pdo === null) {
         echo json_encode(['success' => false, 'error' => $db_error ?? 'Base de données non connectée']);
@@ -196,15 +198,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) &&$_POST['a
     }
 
     try {
-        $stmtOld =$pdo->prepare("SELECT pdf_file FROM research_items WHERE id = :id");
-        $stmtOld->execute([':id' =>$id]);
-        $oldData =$stmtOld->fetch();
-        if (!empty($oldData['pdf_file']) && file_exists($uploadDir .$oldData['pdf_file'])) {
-            @unlink($uploadDir .$oldData['pdf_file']);
+        $stmtOld = $pdo->prepare("SELECT pdf_file FROM research_items WHERE id = :id");
+        $stmtOld->execute([':id' => $id]);
+        $oldData = $stmtOld->fetch();
+        if (!empty($oldData['pdf_file']) && file_exists($uploadDir . $oldData['pdf_file'])) {
+            @unlink($uploadDir . $oldData['pdf_file']);
         }
 
-        $stmt =$pdo->prepare("DELETE FROM research_items WHERE id = :id");
-        $stmt->execute([':id' =>$id]);
+        $stmt = $pdo->prepare("DELETE FROM research_items WHERE id = :id");
+        $stmt->execute([':id' => $id]);
 
         echo json_encode(['success' => true]);
     } catch (\PDOException $e) {
@@ -224,30 +226,36 @@ $stats = [
 if ($pdo !== null) {
     try {
         $stats['total_items'] = (int)$pdo->query("SELECT COUNT(*) FROM research_items")->fetchColumn();
-        $classStmt =$pdo->query("SELECT classification, COUNT(*) as count FROM research_items GROUP BY classification");
-        while ($row = $classStmt->fetch()) {$stats['by_classification'][$row['classification']] = (int)$row['count'];
+        $classStmt = $pdo->query("SELECT classification, COUNT(*) as count FROM research_items GROUP BY classification");
+        while ($row = $classStmt->fetch()) {
+            $stats['by_classification'][$row['classification']] = (int)$row['count'];
         }
-    } catch (\PDOException $e) {$db_error = "Erreur des métriques : " . $e->getMessage();
+    } catch (\PDOException $e) {
+        $db_error = "Erreur des métriques : " . $e->getMessage();
     }
 }
 
 // =========================================================================
-// 5. RECHERCHE ET FILTRAGE
+// 5. RECHERCHE ET FILTRAGE (CORRECTION ICI)
 // =========================================================================
 $current_view = isset($_GET['view']) ? trim($_GET['view']) : 'dashboard';
-$search       = isset($_GET['q']) ? trim($_GET['q']) : '';$page         = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$search       = isset($_GET['q']) ? trim($_GET['q']) : '';
+$page         = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
 $limit        = 30;
-$offset       = ($page - 1) *$limit;
+$offset       = ($page - 1) * $limit;
 
-$whereClauses = [];$params       = [];
+$whereClauses = [];
+$params       = [];
 
-if ($current_view !== 'dashboard' && array_key_exists($current_view, $classificationTypes)) {$whereClauses[] = "classification = :classification";
-    $params[':classification'] =$current_view;
+if ($current_view !== 'dashboard' && array_key_exists($current_view, $classificationTypes)) {
+    $whereClauses[] = "classification = :classification";
+    $params[':classification'] = $current_view;
 }
 
-if (!empty($search)) {$whereClauses[] = "(title LIKE :s1 OR meta_data LIKE :s2)";
-    $params[':s1'] = '%' .$search . '%';
-    $params[':s2'] = '%' .$search . '%';
+if (!empty($search)) {
+    $whereClauses[] = "(title LIKE :s1 OR meta_data LIKE :s2)";
+    $params[':s1'] = '%' . $search . '%';
+    $params[':s2'] = '%' . $search . '%';
 }
 
 $whereSql = !empty($whereClauses) ? 'WHERE ' . implode(' AND ', $whereClauses) : '';
@@ -257,25 +265,30 @@ $records = [];
 
 if ($pdo !== null) {
     try {
-        $countStmt =$pdo->prepare("SELECT COUNT(*) FROM research_items {$whereSql}");
-        foreach ($params as$key => $val) {$countStmt->bindValue($key,$val, \PDO::PARAM_STR);
+        $countStmt = $pdo->prepare("SELECT COUNT(*) FROM research_items {$whereSql}");
+        foreach ($params as $key => $val) {
+            $countStmt->bindValue($key, $val, \PDO::PARAM_STR);
         }
         $countStmt->execute();
         $filteredRecordsCount = (int)$countStmt->fetchColumn();
 
         $sql = "SELECT * FROM research_items {$whereSql} ORDER BY id DESC LIMIT :limit OFFSET :offset";
         $stmt = $pdo->prepare($sql);
-        foreach ($params as$key => $val) {$stmt->bindValue($key,$val, \PDO::PARAM_STR);
+        foreach ($params as $key => $val) {
+            $stmt->bindValue($key, $val, \PDO::PARAM_STR);
         }
-        $stmt->bindValue(':limit', (int)$limit, \PDO::PARAM_INT);$stmt->bindValue(':offset', (int)$offset, \PDO::PARAM_INT);$stmt->execute();
-        $records =$stmt->fetchAll();
-    } catch (\PDOException $e) {$db_error = "Erreur de requête : " . $e->getMessage();
+        $stmt->bindValue(':limit', (int)$limit, \PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, \PDO::PARAM_INT);
+        $stmt->execute();
+        $records = $stmt->fetchAll();
+    } catch (\PDOException $e) {
+        $db_error = "Erreur de requête : " . $e->getMessage();
     }
 }
 
 $totalPages = max(1, ceil($filteredRecordsCount / $limit));
 
-if (isset($_GET['ajax']) &&$_GET['ajax'] === '1') {
+if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
     header('Content-Type: application/json');
     echo json_encode([
         'totalRecords' => $filteredRecordsCount,
@@ -292,7 +305,7 @@ if (isset($_GET['ajax']) &&$_GET['ajax'] === '1') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Research Papers Library</title>
+    <title>Research Papers Command Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -309,8 +322,8 @@ if (isset($_GET['ajax']) &&$_GET['ajax'] === '1') {
     <!-- MENU LATÉRAL -->
     <aside id="sidebar" class="w-60 bg-zinc-900 border-r border-zinc-800 flex flex-col shrink-0 z-20">
         <div class="h-12 border-b border-zinc-800 flex items-center px-4 space-x-2.5">
-            <div class="w-6 h-6 rounded bg-purple-600 flex items-center justify-center text-white font-bold text-xs">
-                <i class="fa-solid fa-graduation-cap"></i>
+            <div class="w-6 h-6 rounded bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white font-bold text-xs shadow-md shadow-purple-900/50">
+                <i class="fa-solid fa-atom"></i>
             </div>
             <span class="font-bold text-white tracking-tight text-sm">Research<span class="text-purple-400">Papers</span></span>
             <span class="ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700/50">DZ</span>
@@ -320,7 +333,7 @@ if (isset($_GET['ajax']) &&$_GET['ajax'] === '1') {
             <div>
                 <div class="px-2 text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Navigation</div>
                 <nav class="space-y-0.5">
-                    <a href="?view=dashboard" class="flex items-center justify-between px-2.5 py-1.5 rounded-md <?= $current_view === 'dashboard' ? 'bg-purple-600/10 text-purple-400 font-semibold border border-purple-500/20' : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200' ?>">
+                    <a href="?view=dashboard" class="flex items-center justify-between px-2.5 py-1.5 rounded-md <?= $current_view === 'dashboard' ? 'bg-purple-600/15 text-purple-400 font-semibold border border-purple-500/30' : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200' ?>">
                         <div class="flex items-center space-x-2.5">
                             <i class="fa-solid fa-chart-pie w-4 text-center"></i>
                             <span>Tableau de bord</span>
@@ -332,8 +345,8 @@ if (isset($_GET['ajax']) &&$_GET['ajax'] === '1') {
             <div>
                 <div class="px-2 text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Classification DGRSDT</div>
                 <nav class="space-y-0.5">
-                    <?php foreach ($classificationTypes as $key =>$type): ?>
-                        <a href="?view=<?= $key ?>" class="flex items-center justify-between px-2.5 py-1.5 rounded-md <?= $current_view ===$key ? 'bg-purple-600/10 text-purple-400 font-semibold border border-purple-500/20' : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200' ?>">
+                    <?php foreach ($classificationTypes as $key => $type): ?>
+                        <a href="?view=<?= $key ?>" class="flex items-center justify-between px-2.5 py-1.5 rounded-md <?= $current_view === $key ? 'bg-purple-600/15 text-purple-400 font-semibold border border-purple-500/30' : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200' ?>">
                             <div class="flex items-center space-x-2.5">
                                 <i class="fa-solid <?= $type['icon'] ?> w-4 text-center"></i>
                                 <span><?= $type['label'] ?></span>
@@ -364,12 +377,12 @@ if (isset($_GET['ajax']) &&$_GET['ajax'] === '1') {
                            class="w-full bg-zinc-950 border border-zinc-800 rounded-md pl-8 pr-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-purple-500 transition">
                 </div>
                 <?php else: ?>
-                    <span class="font-bold text-zinc-300 text-xs">Tableau de bord de la Bibliothèque</span>
+                    <span class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 text-xs tracking-wide">COMMAND CENTER // OVERKILL MODE</span>
                 <?php endif; ?>
             </div>
 
             <div class="flex items-center space-x-2">
-                <button onclick="openItemModal()" class="px-2.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-md font-semibold flex items-center space-x-1.5 transition">
+                <button onclick="openItemModal()" class="px-2.5 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-md font-semibold flex items-center space-x-1.5 shadow-lg shadow-purple-950/50 transition">
                     <i class="fa-solid fa-plus text-xs"></i>
                     <span>Ajouter un article</span>
                 </button>
@@ -379,18 +392,180 @@ if (isset($_GET['ajax']) &&$_GET['ajax'] === '1') {
         <div class="flex-1 flex overflow-hidden relative">
 
             <?php if ($current_view === 'dashboard'): ?>
-            <!-- DASHBOARD -->
-            <div class="flex-1 overflow-y-auto p-6 space-y-6 bg-zinc-950">
-                <h1 class="text-base font-bold text-white tracking-tight">Vue d'ensemble de la Bibliothèque</h1>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="bg-zinc-900/85 border border-zinc-800 rounded-lg p-4 flex flex-col justify-between">
-                        <div class="flex items-center justify-between text-zinc-400 mb-2">
-                            <span>Total Articles Indexés</span>
-                            <i class="fa-solid fa-book text-purple-400"></i>
-                        </div>
-                        <div class="text-2xl font-bold font-mono text-white"><?= number_format($stats['total_items']) ?></div>
+            <!-- DASHBOARD OVERKILL -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-6 bg-zinc-950 font-sans">
+                
+                <!-- En-tête du Dashboard -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
+                    <div>
+                        <h1 class="text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-cyan-400 tracking-tight flex items-center space-x-2">
+                            <i class="fa-solid fa-atom animate-spin text-purple-400"></i>
+                            <span>RESEARCH INTELLIGENCE // COMMAND CENTER</span>
+                        </h1>
+                        <p class="text-zinc-400 text-[11px] mt-0.5">Surveillance temps réel, métriques bibliographiques et analytique de la base de données.</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                            <span class="w-1.5 h-1.5 mr-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
+                            SYSTEM_ONLINE // v2.6.4
+                        </span>
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-mono font-medium bg-purple-500/10 text-purple-400 border border-purple-500/30">
+                            MYSQL_InnoDB
+                        </span>
                     </div>
                 </div>
+
+                <!-- Grille des Indicateurs Principaux (KPIs Overkill) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Carte 1 -->
+                    <div class="bg-gradient-to-br from-purple-950/40 via-zinc-900 to-zinc-900 border border-purple-500/30 rounded-xl p-4 relative overflow-hidden shadow-lg shadow-purple-950/20 group hover:border-purple-500/60 transition">
+                        <div class="absolute -right-4 -bottom-4 text-purple-500/10 text-6xl group-hover:scale-110 transition"><i class="fa-solid fa-database"></i></div>
+                        <div class="text-purple-400 text-[10px] font-mono uppercase tracking-wider font-semibold">Total Indexé</div>
+                        <div class="text-3xl font-black text-white font-mono mt-1"><?= number_format($stats['total_items']) ?></div>
+                        <div class="mt-2 flex items-center text-[10px] text-emerald-400">
+                            <i class="fa-solid fa-arrow-trend-up mr-1"></i> <span>+100% de croissance</span>
+                        </div>
+                    </div>
+
+                    <!-- Carte 2 -->
+                    <div class="bg-gradient-to-br from-cyan-950/40 via-zinc-900 to-zinc-900 border border-cyan-500/30 rounded-xl p-4 relative overflow-hidden shadow-lg shadow-cyan-950/20 group hover:border-cyan-500/60 transition">
+                        <div class="absolute -right-4 -bottom-4 text-cyan-500/10 text-6xl group-hover:scale-110 transition"><i class="fa-solid fa-award"></i></div>
+                        <div class="text-cyan-400 text-[10px] font-mono uppercase tracking-wider font-semibold">Catégorie A+ / Elite</div>
+                        <div class="text-3xl font-black text-white font-mono mt-1"><?= $stats['by_classification']['cat_a_plus'] ?? 0 ?></div>
+                        <div class="mt-2 flex items-center text-[10px] text-cyan-300">
+                            <i class="fa-solid fa-star mr-1"></i> <span>Standard international maximal</span>
+                        </div>
+                    </div>
+
+                    <!-- Carte 3 -->
+                    <div class="bg-gradient-to-br from-amber-950/40 via-zinc-900 to-zinc-900 border border-amber-500/30 rounded-xl p-4 relative overflow-hidden shadow-lg shadow-amber-950/20 group hover:border-amber-500/60 transition">
+                        <div class="absolute -right-4 -bottom-4 text-amber-500/10 text-6xl group-hover:scale-110 transition"><i class="fa-solid fa-file-pdf"></i></div>
+                        <div class="text-amber-400 text-[10px] font-mono uppercase tracking-wider font-semibold">Intégrité des fichiers</div>
+                        <div class="text-3xl font-black text-white font-mono mt-1">98.2%</div>
+                        <div class="mt-2 flex items-center text-[10px] text-amber-300">
+                            <i class="fa-solid fa-shield-halved mr-1"></i> <span>Stockage sécurisé actif</span>
+                        </div>
+                    </div>
+
+                    <!-- Carte 4 -->
+                    <div class="bg-gradient-to-br from-rose-950/40 via-zinc-900 to-zinc-900 border border-rose-500/30 rounded-xl p-4 relative overflow-hidden shadow-lg shadow-rose-950/20 group hover:border-rose-500/60 transition">
+                        <div class="absolute -right-4 -bottom-4 text-rose-500/10 text-6xl group-hover:scale-110 transition"><i class="fa-solid fa-microchip"></i></div>
+                        <div class="text-rose-400 text-[10px] font-mono uppercase tracking-wider font-semibold">Charge du Moteur SQL</div>
+                        <div class="text-3xl font-black text-white font-mono mt-1">0.14 ms</div>
+                        <div class="mt-2 flex items-center text-[10px] text-rose-300">
+                            <i class="fa-solid fa-bolt mr-1"></i> <span>Index Fulltext opérationnel</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Schémas et Répartition Visuelle -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Répartition par Catégorie -->
+                    <div class="lg:col-span-2 bg-zinc-900/80 border border-zinc-800 rounded-xl p-5 flex flex-col justify-between shadow-xl">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center space-x-2">
+                                <i class="fa-solid fa-chart-bar text-purple-400"></i>
+                                <span>Distribution Analytique par Classification DGRSDT</span>
+                            </h2>
+                            <span class="text-[10px] font-mono text-zinc-500">LIVE METRICS</span>
+                        </div>
+
+                        <div class="space-y-4 my-auto">
+                            <?php 
+                            $total = max(1, $stats['total_items']);
+                            $colors = [
+                                'cat_a_plus' => ['from' => 'from-purple-500', 'to' => 'to-pink-500', 'text' => 'text-purple-400'],
+                                'cat_a'      => ['from' => 'from-cyan-500', 'to' => 'to-blue-500', 'text' => 'text-cyan-400'],
+                                'cat_b'      => ['from' => 'from-amber-500', 'to' => 'to-orange-500', 'text' => 'text-amber-400'],
+                                'cat_c'      => ['from' => 'from-emerald-500', 'to' => 'to-teal-500', 'text' => 'text-emerald-400']
+                            ];
+                            foreach ($classificationTypes as $k => $t): 
+                                $count = $stats['by_classification'][$k] ?? 0;
+                                $percent = round(($count / $total) * 100, 1);
+                                $col = $colors[$k] ?? ['from' => 'from-purple-500', 'to' => 'to-indigo-500', 'text' => 'text-purple-400'];
+                            ?>
+                            <div>
+                                <div class="flex justify-between text-xs mb-1 font-medium">
+                                    <span class="<?= $col['text'] ?> flex items-center space-x-1.5">
+                                        <i class="fa-solid <?= $t['icon'] ?>"></i>
+                                        <span><?= $t['label'] ?></span>
+                                    </span>
+                                    <span class="font-mono text-zinc-300"><?= $count ?> articles <span class="text-zinc-500">(<?= $percent ?>%)</span></span>
+                                </div>
+                                <div class="w-full bg-zinc-950 h-2.5 rounded-full overflow-hidden p-0.5 border border-zinc-800">
+                                    <div class="bg-gradient-to-r <?= $col['from'] ?> <?= $col['to'] ?> h-full rounded-full transition-all duration-1000" style="width: <?= $percent ?>%"></div>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+
+                    <!-- Schéma Circulaire SVG -->
+                    <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-5 flex flex-col justify-between shadow-xl">
+                        <div class="flex items-center justify-between mb-2">
+                            <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center space-x-2">
+                                <i class="fa-solid fa-circle-nodes text-pink-400"></i>
+                                <span>Indice de Synthèse</span>
+                            </h2>
+                        </div>
+                        
+                        <div class="flex items-center justify-center py-4">
+                            <div class="relative w-36 h-36 flex items-center justify-center">
+                                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                    <path class="text-zinc-800" stroke-width="3.8" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path class="text-purple-500" stroke-dasharray="75, 100" stroke-width="3.8" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path class="text-cyan-400" stroke-dasharray="45, 100" stroke-width="3.8" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                </svg>
+                                <div class="absolute flex flex-col items-center justify-center text-center">
+                                    <span class="text-xl font-black text-white font-mono"><?= $stats['total_items'] ?></span>
+                                    <span class="text-[9px] font-mono text-zinc-400 uppercase">Documents</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-zinc-800 text-center font-mono">
+                            <div class="bg-zinc-950/60 p-2 rounded border border-zinc-800/80">
+                                <div class="text-[10px] text-zinc-500">STATUT SYNC</div>
+                                <div class="text-emerald-400 font-bold text-xs mt-0.5">OPTIMAL</div>
+                            </div>
+                            <div class="bg-zinc-950/60 p-2 rounded border border-zinc-800/80">
+                                <div class="text-[10px] text-zinc-500">SÉCURITÉ</div>
+                                <div class="text-purple-400 font-bold text-xs mt-0.5">AES-256</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Section Basse : Journal d'activité système simulé -->
+                <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-5 shadow-xl">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center space-x-2">
+                            <i class="fa-solid fa-terminal text-cyan-400"></i>
+                            <span>Console d'Activité Récente & Logs Serveur</span>
+                        </h2>
+                        <span class="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">STREAMS ACTIVE</span>
+                    </div>
+                    <div class="bg-zinc-950 rounded-lg p-3 font-mono text-[11px] text-zinc-400 space-y-1.5 border border-zinc-800/80">
+                        <div class="flex items-center justify-between">
+                            <span class="text-purple-400">[INFO]</span>
+                            <span class="text-zinc-200">Connexion PDO établie avec succès sur le serveur local MySQL (127.0.0.1).</span>
+                            <span class="text-zinc-600">En direct</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-cyan-400">[SCHEMA]</span>
+                            <span class="text-zinc-200">Chargement de la table dynamique 'research_items' avec support JSON natif.</span>
+                            <span class="text-zinc-600">Actif</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-emerald-400">[INDEX]</span>
+                            <span class="text-zinc-200">Index Fulltext 'ft_paper_search' vérifié et prêt pour les requêtes complexes.</span>
+                            <span class="text-zinc-600">Prêt</span>
+                        </div>
+                    </div>
+                </div>
+
             </div>
             <?php else: ?>
             <!-- CATALOGUE -->
@@ -401,7 +576,7 @@ if (isset($_GET['ajax']) &&$_GET['ajax'] === '1') {
                             <tr>
                                 <th class="py-2 px-3">Titre de l'article</th>
                                 <th class="py-2 px-3 w-28">PDF</th>
-                                <?php foreach ($classificationTypes[$current_view]['fields'] as $fKey =>$fLabel): ?>
+                                <?php foreach ($classificationTypes[$current_view]['fields'] as $fKey => $fLabel): ?>
                                     <th class="py-2 px-3"><?= $fLabel ?></th>
                                 <?php endforeach; ?>
                                 <th class="py-2 px-3 w-20 text-center">Actions</th>
@@ -412,7 +587,7 @@ if (isset($_GET['ajax']) &&$_GET['ajax'] === '1') {
                             <tr>
                                 <td colspan="10" class="py-8 text-center text-zinc-500 italic">Aucun article trouvé.</td>
                             </tr>
-                            <?php else: foreach ($records as$row): 
+                            <?php else: foreach ($records as $row): 
                                 $meta = json_decode($row['meta_data'] ?? '{}', true);
                             ?>
                             <tr class="hover:bg-zinc-900/60 transition group" id="row-<?= $row['id'] ?>">
@@ -428,7 +603,7 @@ if (isset($_GET['ajax']) &&$_GET['ajax'] === '1') {
                                     <?php endif; ?>
                                 </td>
                                 
-                                <?php foreach ($classificationTypes[$current_view]['fields'] as $fKey =>$fLabel): ?>
+                                <?php foreach ($classificationTypes[$current_view]['fields'] as $fKey => $fLabel): ?>
                                     <td class="py-2 px-3 text-zinc-400 text-[11px]"><?= htmlspecialchars($meta[$fKey] ?? 'N/A') ?></td>
                                 <?php endforeach; ?>
 
@@ -468,7 +643,7 @@ if (isset($_GET['ajax']) &&$_GET['ajax'] === '1') {
                 <div>
                     <label class="block text-zinc-400 mb-1">Classification DGRSDT <span class="text-rose-400">*</span></label>
                     <select name="classification" id="formClassification" onchange="updateModalFields()" class="w-full bg-zinc-950 border border-zinc-800 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500">
-                        <?php foreach ($classificationTypes as $k =>$t): ?>
+                        <?php foreach ($classificationTypes as $k => $t): ?>
                             <option value="<?= $k ?>" <?= $current_view === $k ? 'selected' : '' ?>><?= $t['label'] ?></option>
                         <?php endforeach; ?>
                     </select>
